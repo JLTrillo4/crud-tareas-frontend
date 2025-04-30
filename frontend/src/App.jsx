@@ -8,20 +8,21 @@ function App() {
   const [titulo, setTitulo] = useState('');
   const [modoEdicion, setModoEdicion] = useState(false);
   const [idEditando, setIdEditando] = useState(null);
+  const vite_url_api = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    axios.get('http://localhost:3001/tareas').then(res => setTareas(res.data));
+    axios.get(`${vite_url_api}/tareas`).then(res => setTareas(res.data));
   }, []);
 
   const agregarTarea = async () => {
     if (!titulo.trim()) return;
     if (modoEdicion) {
-      const res = await axios.put(`http://localhost:3001/tareas/${idEditando}`, { titulo });
+      const res = await axios.post(`${vite_url_api}/tareas/${idEditando}`, { titulo });
       setTareas(tareas.map(t => (t._id === idEditando ? res.data : t)));
       setModoEdicion(false);
       setIdEditando(null);
     } else {
-      const res = await axios.post('http://localhost:3001/tareas', { titulo, completada: false });
+      const res = await axios.post(`${vite_url_api}/tareas/${idEditando}`, { titulo });
       setTareas([...tareas, res.data]);
     }
     setTitulo('');
@@ -29,12 +30,12 @@ function App() {
 
   const completarTarea = async (id) => {
     const tarea = tareas.find(t => t._id === id);
-    const res = await axios.put(`http://localhost:3001/tareas/${id}`, { ...tarea, completada: !tarea.completada });
+    const res = await axios.post(`${vite_url_api}/tareas/${idEditando}`, { ...tarea, completada: !tarea.completada });
     setTareas(tareas.map(t => (t._id === id ? res.data : t)));
   };
 
   const eliminarTarea = async (id) => {
-    await axios.delete(`http://localhost:3001/tareas/${id}`);
+    await axios.delete(`${vite_url_api}/tareas/${idEditando}`);
     setTareas(tareas.filter(t => t._id !== id));
   };
 
@@ -47,7 +48,7 @@ function App() {
   const completarTodas = async () => {
     const updatedTareas = await Promise.all(tareas.map(async (tarea) => {
       if (!tarea.completada) {
-        const res = await axios.put(`http://localhost:3001/tareas/${tarea._id}`, { ...tarea, completada: true });
+        const res = await axios.put(`${vite_url_api}/tareas/${tarea._id}`, { ...tarea, completada: true });
         return res.data;
       }
       return tarea;
